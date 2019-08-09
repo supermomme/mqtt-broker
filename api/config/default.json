@@ -1,0 +1,37 @@
+{
+  "host": "localhost",
+  "port": 3030,
+  "public": "../public/",
+  "paginate": {
+    "default": 10,
+    "max": 50
+  },
+  "mqttBroker": {
+    "port": 1883
+  },
+  "authentication": {
+    "secret": "26038905b939e84b6cf90ccab4703113c528fb0f7e0e138ae14b14a9359e53dfa7c0bd62389ba9a66fb61d9ffe464b4ad6c43fec8885ec462b9b7a7fbac548577eadc66f3f4ee8ded93a7c25994722069b4f84120bc5a2b4eaadf8e49f3d1a535277f1ff1d0aa1d39b1a3be6c6169386a466850a4d1866ca042b456239284922e6da6516179c9fc858c5fb1a698d1bb24631235ea83b1ce4d43ef0fa6fdec1b26670d7b4ed0edb1ce5b1121cddbf62c6dad16e1ad47aa7a1cccc03570f80d9c334343d0c8c0129ef426317bf2ea797c7e25000d4d896fb130af6df22becc6d38e0bf26db2d17d99de24bf5c7a1df7fe9c6aa412c297ce40895813f6ce1b8ddf2",
+    "strategies": [
+      "jwt",
+      "local"
+    ],
+    "path": "/authentication",
+    "service": "user",
+    "jwt": {
+      "header": {
+        "typ": "access"
+      },
+      "audience": "https://yourdomain.com",
+      "subject": "anonymous",
+      "issuer": "feathers",
+      "algorithm": "HS256",
+      "expiresIn": "1d"
+    },
+    "local": {
+      "entity": "user",
+      "usernameField": "email",
+      "passwordField": "password"
+    }
+  },
+  "mongodb": "mongodb://localhost:27017/mqtt-broker"
+}

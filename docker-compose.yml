@@ -1,0 +1,27 @@
+version: "3"
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: ./dev.Dockerfile
+    tty: true
+    command: npm run serve
+    environment:
+      - VUE_APP_API_URL=http://api:3030
+    ports:
+      - 8080:8080
+    volumes:
+      - ./client/src:/app/src
+  api:
+    build: ./api
+    command: npm run serve
+    ports:
+      - 1883:1883
+      - 3030:3030
+      - 9999:9999
+    volumes:
+      - ./api/src:/app/src
+      - ./api/public:/app/public
+      - ./api/config:/app/config
+    environment:
+      - NODE_ENV=docker
