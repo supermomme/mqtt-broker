@@ -16,7 +16,7 @@ services:
     build: ./api
     command: npm run serve
     ports:
-      - 1883:1883
+      - 1884:1883
       - 3030:3030
       - 9999:9999
     volumes:
@@ -25,3 +25,12 @@ services:
       - ./api/config:/app/config
     environment:
       - NODE_ENV=docker
+  mongo:
+    image: mongo:3.6
+    volumes:
+       - mongodb-data:/data/db
+    ports:
+      - 27017:27017
+
+volumes:
+  mongodb-data:

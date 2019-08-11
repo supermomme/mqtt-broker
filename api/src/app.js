@@ -18,9 +18,9 @@ const channels = require('./channels')
 
 const mqttBroker = require('./mqttBroker')
 
-const authentication = require('./authentication');
+const authentication = require('./authentication')
 
-const mongoose = require('./mongoose');
+const mongoose = require('./mongoose')
 
 const app = express(feathers())
 
@@ -42,11 +42,11 @@ app.configure(socketio())
 
 app.configure(mqttBroker)
 
-app.configure(mongoose);
+app.configure(mongoose)
 
 // Configure other middleware (see `middleware/index.js`)
 app.configure(middleware)
-app.configure(authentication);
+app.configure(authentication)
 // Set up our services (see `services/index.js`)
 app.configure(services)
 // Set up event channels (see channels.js)

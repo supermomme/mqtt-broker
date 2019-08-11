@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "start": "docker-compose up --build",
-    "postinstall": "concurrently \"cd api && npm install\" \"cd client && npm install\""
-
+    "postinstall": "concurrently \"cd api && npm install\" \"cd client && npm install\"",
+    "fix": "concurrently \"cd api && npm run eslint:fix\" \"cd client && npm run lint\""
   },
   "author": "Momme Jürgensen",
   "license": "ISC",
