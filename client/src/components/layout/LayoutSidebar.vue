@@ -2,7 +2,7 @@
   <v-navigation-drawer
     v-model="sidebarOpened"
     app
-    :clipped="$vuetify.breakpoint.lgAndDown"
+    :clipped="$vuetify.breakpoint.lgAndUp"
   >
     <v-list
       dense
@@ -14,11 +14,35 @@
         @click="$store.commit('openDialog', 'TestDialog')"
       >
         <v-list-item-icon>
-          <v-icon>mdi-account</v-icon>
+          <v-icon>mdi-test-tube</v-icon>
         </v-list-item-icon>
 
         <v-list-item-content>
-          <v-list-item-title>test</v-list-item-title>
+          <v-list-item-title>Test Dialog</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-list-item
+        :to="{ name: 'Dashboard' }"
+      >
+        <v-list-item-icon>
+          <v-icon>mdi-view-dashboard</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title>Dashboard</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-list-item
+        :to="{ name: 'UserList' }"
+      >
+        <v-list-item-icon>
+          <v-icon>mdi-account-group</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title>Benutzer</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </v-list>

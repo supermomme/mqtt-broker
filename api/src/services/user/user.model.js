@@ -11,7 +11,7 @@ module.exports = function (app) {
 
     firstname: { type: String, required: true },
     lastname: { type: String, required: true },
-    email: { type: String },
+    email: { type: String, unique: false, required: false },
 
     role: { type: String, enum: [ 'ADMIN', 'USER' ], default: 'USER' }
 

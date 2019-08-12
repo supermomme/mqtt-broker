@@ -66,7 +66,7 @@ export default {
             password: this.password
           })
           await this.$router.push({ name: 'Dashboard' })
-        } catch (error) {
+        } catch (error) { // BOOKMARK: trycatchfinally done right
           if ((error.code === 401 && error.message === 'Invalid login') || error.code === 403) {
             this.$store.commit('openSnackbar', { color: 'error', text: 'Der Benutzername oder das Passwort ist falsch!' })
           } else {

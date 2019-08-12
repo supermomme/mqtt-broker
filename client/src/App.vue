@@ -11,6 +11,12 @@
     >
       {{ $store.state.snackbar.text }}
     </v-snackbar>
+    <v-overlay :value="$store.state.isLoading">
+      <v-progress-circular
+        indeterminate
+        size="64"
+      />
+    </v-overlay>
   </v-app>
 </template>
 

@@ -8,6 +8,24 @@ const router = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
+    { path: '*', redirect: { name: 'Error', params: { errorCode: '404' } } },
+    { path: '/', redirect: { name: 'Dashboard' } },
+    {
+      name: 'Error',
+      path: '/error/:errorCode',
+      component: () => import('./views/Error'),
+      meta: {
+        layout: 'CenterLayout'
+      }
+    },
+    {
+      name: 'Login',
+      path: '/login',
+      component: () => import('./views/Login'),
+      meta: {
+        layout: 'CenterLayout'
+      }
+    },
     {
       name: 'Dashboard',
       path: '/dashboard',
@@ -17,11 +35,29 @@ const router = new Router({
       }
     },
     {
-      name: 'Login',
-      path: '/login',
-      component: () => import('./views/Login'),
+      name: 'UserList',
+      path: '/admin/user',
+      component: () => import('./views/UserList'),
       meta: {
-        layout: 'CenterLayout'
+        layout: 'DefaultLayout'
+      }
+    },
+    {
+      name: 'UserCreate',
+      path: '/admin/user/create',
+      component: () => import('./views/UserEdit'),
+      meta: {
+        layout: 'DefaultLayout',
+        isCreate: true
+      }
+    },
+    {
+      name: 'UserEdit',
+      path: '/admin/user/:userId',
+      component: () => import('./views/UserEdit'),
+      meta: {
+        layout: 'DefaultLayout',
+        isCreate: false
       }
     }
   ]

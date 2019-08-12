@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import feathers from './api'
 import feathersVuex from 'feathers-vuex'
-
+import UserDefaults from '@/defaults/UserDefaults'
 // eslint-disable-next-line no-unused-vars
 const { service, auth, FeathersVuex } = feathersVuex(feathers, { idField: '_id' })
 
@@ -12,17 +12,23 @@ Vue.use(FeathersVuex)
 export default new Vuex.Store({
   plugins: [
     auth({ userService: 'user' }),
-    service('user')
+    service('user', {
+      instanceDefaults: UserDefaults
+    })
   ],
   state: {
     sidebarOpened: true,
     dialog: null,
     snackbar: {
       color: 'info',
-      text: 'Hello!'
-    }
+      text: 'Hallo!'
+    },
+    isLoading: false
   },
   mutations: {
+    setLoading (state, n) {
+      state.isLoading = n
+    },
     toggleSidebar (state) {
       state.sidebarOpened = !state.sidebarOpened
     },

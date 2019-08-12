@@ -5,7 +5,7 @@ const { Forbidden } = require('@feathersjs/errors')
 module.exports = {
   before: {
     all: [
-      (hook) => { // TODO: better permission/role syste  :)
+      (hook) => { // TODO: better permission/role system  :)
         if (
           hook.params.provider == undefined ||
           hook.params.provider == 'mqtt' ||
