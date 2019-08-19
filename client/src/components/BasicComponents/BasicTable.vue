@@ -16,12 +16,17 @@
         @click:row="$emit('rowClicked', $event)"
       />
     </v-flex>
+    <v-flex><dev :data="{data}" /></v-flex>
   </v-layout>
 </template>
 
 <script>
+import Dev from '@/components/Dev'
 export default {
   name: 'BasicTable',
+  components: {
+    Dev
+  },
   props: {
     fields: {
       type: Array,
@@ -47,7 +52,6 @@ export default {
   computed: {
     data () {
       let response = this.$store.getters[`${this.service}/find`]({ query: this.query })
-      this.fetchData()
       return response.data
     },
     query () {
@@ -64,8 +68,16 @@ export default {
       return query
     }
   },
+  watch: {
+    '$route': {
+      handler: 'fetchData',
+      immediate: true
+    },
+    'query': 'fetchData'
+  },
   methods: {
     async fetchData () {
+      console.log('fetch')
       try {
         this.loading = true
         let res = await this.$store.dispatch(`${this.service}/find`, { query: this.query })
