@@ -1,84 +1,9 @@
-const mosca = require('mosca')
-const bcrypt = require('bcrypt')
-const mqttPacket = require('mqtt-packet')
 const net = require('net')
 const mqttCon = require('mqtt-connection')
-const websocket = require('websocket-stream')
-const WebSocketServer = require('ws').Server
+const websocket = require('websocket-stream') // eslint-disable-line no-unused-vars
+const WebSocketServer = require('ws').Server // eslint-disable-line no-unused-vars
 
-module.exports = function (app) {
-  const _super = app.setup
-  app.setup = function() {
-    // const server = new mosca.Server({
-    //   port: app.get('mqtt').port,
-    //   backend: {
-    //     type: 'mongo',
-    //     url: app.get('mongodb'),
-    //     pubsubCollection: 'ascoltatori',
-    //     mongo: {}
-    //   },
-    //   http: {
-    //     port: app.get('mqtt').websocketPort
-    //   }
-    // })
-    // app.set('mqttServer', server)
-    // server.on('ready', () => {
-
-    //   server.on('clientConnected', function({ id }) {
-    //     app.get('logger').info('client connected', {id})
-    //   })
-
-    //   server.on('published', function({topic, payload, messageId}, client) {
-    //     let clientId = client ? client.id : null
-    //     app.get('logger').info('Published', {topic, payload, messageId, clientId})
-    //   })
-
-    //   server.authenticate = async (client, username, password, callback) => {
-    //     try {
-    //       const user = (await (app.service('user').find({ query: { username, $limit: 1 }}))).data[0]
-    //       const authed = await bcrypt.compare(password.toString(), user.password)
-    //       if (!authed) return callback(null, false)
-
-    //       client.user = {
-    //         username: user.username,
-    //         avatarUrl: user.avatarUrl,
-    //         email: user.email,
-    //         firstname: user.firstname,
-    //         lastname: user.lastname,
-    //         role: user.role
-    //       }
-    //       callback(null, true)
-    //     } catch (error) {
-    //       // eslint-disable-next-line no-console
-    //       console.log(error)
-    //       callback(null, false)
-    //     }
-    //   }
-    //   server.authorizePublish = (client, topic, payload, callback) => {
-    //     if (client.user.role === 'ADMIN') callback(null, true)
-    //     else {
-    //       callback(null, false)
-    //     }
-    //   }
-    //   server.authorizeSubscribe = (client, topic, callback) => {
-    //     if (client.user.role === 'ADMIN') callback(null, true)
-    //     else {
-    //       callback(null, false)
-    //     }
-    //   }
-    app.set('mqttBroker', new Broker({
-      logger: app.get('logger'),
-      mqtt: {
-        host: app.get('host'),
-        ...app.get('mqtt')
-      }
-    }))
-    // })
-    return _super.apply(this, arguments)
-  }
-}
-
-class Broker {
+module.exports = class Broker {
   constructor (opts) {
     if (opts.logger) this.logger = opts.logger
     this.host = opts.mqtt.host
@@ -164,7 +89,6 @@ class Broker {
       topic: value.topic
       // TODO: add qos
     }))
-    console.log(subs)
     this.clients[clientId].subscriptions.push(...subs)
 
   }
@@ -173,7 +97,6 @@ class Broker {
     if (!(Array.isArray(subs) || typeof subs === 'string')) throw 'removeClientSubscription: Array or String needed'
     if (subs.length === 0) return
     if (typeof subs === 'string') subs = [subs]
-    console.log(subs)
     // TODO: add remove subs
   }
 
@@ -183,8 +106,7 @@ class Broker {
 
     client.on('connect', (packet) => {
       if (this.logger) this.logger.info('connect', packet.clientId)
-      console.log(packet)
-      client.connack({ returnCode: 0, messageId: packet.messageId });
+      client.connack({ returnCode: 0, messageId: packet.messageId })
       clientId = packet.clientId
       this.addClient(clientId, client)
     })

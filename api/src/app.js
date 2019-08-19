@@ -9,7 +9,6 @@ const feathers = require('@feathersjs/feathers')
 const configuration = require('@feathersjs/configuration')
 const express = require('@feathersjs/express')
 const socketio = require('@feathersjs/socketio')
-const sync = require('feathers-sync')
 
 const middleware = require('./middleware')
 const services = require('./services')
@@ -56,9 +55,5 @@ app.use(express.notFound())
 app.use(express.errorHandler({ logger: app.get('logger') }))
 
 app.hooks(appHooks)
-
-// app.configure(sync({
-//   uri: app.get('mongodb')
-// }))
 
 module.exports = app
