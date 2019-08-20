@@ -2,6 +2,7 @@ const net = require('net')
 const mqttCon = require('mqtt-connection')
 const websocket = require('websocket-stream') // eslint-disable-line no-unused-vars
 const WebSocketServer = require('ws').Server // eslint-disable-line no-unused-vars
+const MQTTPattern = require('mqtt-pattern')
 
 module.exports = class Broker {
   constructor (opts) {
@@ -25,11 +26,13 @@ module.exports = class Broker {
 
     this.stats = {
       bytesSend: 0,
-      bytesRecieved: 0
+      bytesRecieved: 0,
+      messagesDistributed: 0
     }
-    if (this.logger) setInterval(() => { // Debug
-      this.logger.info('stats', this.stats)
-    }, 5000)
+    // if (this.logger) setInterval(() => { // Debug
+    //   this.logger.info('stats', this.stats)
+    //   if (this.clients['7d60eb4591f64bc49e6bc77f9731d939']) this.logger.info('clientStats', this.clients['7d60eb4591f64bc49e6bc77f9731d939'].stats)
+    // }, 5000)
 
   }
 
@@ -58,17 +61,20 @@ module.exports = class Broker {
         state: 'CONNECTED',
         stats: {
           bytesRecieved: 0,
-          bytesSend: 0
+          bytesSend: 0,
+          messagesRecieved: 0,
+          messagesSend: 0
         },
         subscriptions: [],
-        // TODO: add will
+        // TODO: add will-suport
         client // Don't save that in the mongo
       }
     }
   }
 
   removeClient (clientId) {
-    this.clients[clientId].state = 'CONNECTED'
+    // TODO: add will-suport
+    this.clients[clientId].state = 'DISCONNECTED'
   }
 
   addClientSend (clientId, n = 0) {
@@ -100,9 +106,33 @@ module.exports = class Broker {
     // TODO: add remove subs
   }
 
+  hasClientSubscribedToTopic (clientId, topic) {
+    return this.clients[clientId].subscriptions.filter((t) => {
+      return MQTTPattern.matches(t.topic, topic)
+    }).length !== 0
+  }
+
+  handlePublish (packet, client, clientId) { // add varios QOS-support
+    this.clients[clientId].stats.messagesSend++
+    this.stats.messagesDistributed++
+    let interestedClients = Object.keys(this.clients).reduce((prev, clientId) => {
+      let c = this.clients[clientId]
+      if (c.state === 'CONNECTED' && c.client != undefined && this.hasClientSubscribedToTopic(clientId, packet.topic)) prev[clientId] = c
+      return prev
+    }, {})
+    for (const clientId in interestedClients) {
+      if (interestedClients.hasOwnProperty(clientId)) {
+        const client = interestedClients[clientId]
+        client.stats.messagesRecieved++
+        client.client.publish(packet)
+      }
+    }
+  }
+
   connectionHandler (stream) {
     var client = mqttCon(stream)
     let clientId = null
+    var interval
 
     client.on('connect', (packet) => {
       if (this.logger) this.logger.info('connect', packet.clientId)
@@ -113,8 +143,7 @@ module.exports = class Broker {
 
     client.on('publish', (packet) => {
       if (this.logger) this.logger.info('publish')
-      // TODO: this.handlePublish(packet, client)
-      if (packet.qos === 1) client.puback({ messageId: packet.messageId })
+      this.handlePublish(packet, client, clientId)
     })
 
     client.on('pingreq', () => {
@@ -123,31 +152,36 @@ module.exports = class Broker {
 
     client.on('subscribe', (packet) => {
       if (this.logger) this.logger.info('subscribe')
-      // TODO: this.handleSubscribe(packet, client)
       this.addClientSubscription(clientId, packet.subscriptions)
       client.suback({ granted: [0], messageId: packet.messageId })
     })
 
     client.on('unsubscribe', (packet) => {
       if (this.logger) this.logger.info('unsubscribe')
-      // TODO: this.handleUnsubscribe(packet, client)
       this.removeClientSubscription(clientId, packet.unsubscriptions)
     })
 
     stream.setTimeout(1000 * 60 * 5)
 
     // connection error handling
-    client.on('close', () => { client.destroy() })
-    client.on('error', () => { client.destroy() })
+    client.on('close', () => {
+      this.logger.info('close')
+      clearInterval(interval)
+      this.removeClient(clientId)
+      client.destroy()
+    })
+    client.on('error', (error) => {
+      this.logger.error('Client ERROR', error)
+      client.destroy()
+    })
     client.on('disconnect', () => { client.destroy() })
 
-    // stream timeout
     stream.on('timeout', () => { client.destroy() })
 
     // Stats
     var bytesRead = 0
     var bytesWritten = 0
-    var interval = setInterval(() => {
+    interval = setInterval(() => {
       let lastRecieved = stream.bytesRead - bytesRead
       let lastSend = stream.bytesWritten - bytesWritten
 
