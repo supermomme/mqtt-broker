@@ -52,6 +52,7 @@
     "mqtt-connection": "^4.0.0",
     "mqtt-pattern": "^1.2.0",
     "serve-favicon": "^2.5.0",
+    "uuid": "^3.3.3",
     "winston": "^3.2.1"
   },
   "devDependencies": {
