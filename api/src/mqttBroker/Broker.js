@@ -45,14 +45,17 @@ module.exports = class Broker {
       for (let i = 0; i < this.clients.length; i++) {
         const client = this.clients[i]
         if (!await client.amISubscrubedToThis(packet.topic)) continue
-        client.stats.messagesRecieved++
+        let { totalStats } = await this.app.service('client').get(client.dbId)
+        totalStats.messagesRecieved++
+        await this.app.service('client').patch(client.dbId, { totalStats })
         client.client.publish(packet)
       }
       if (packet.retain) {
         let retaineds = await this.app.service('retained-message').find({
           query: {
             topic: { $in: [packet.topic] }
-          }
+          },
+          paginate: false
         })
         if (retaineds.length === 0) {
           await this.app.service('retained-message').create({

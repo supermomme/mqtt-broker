@@ -25,8 +25,9 @@ module.exports = class Client {
     this.client.on('error', () => { this.client.destroy() })
     this.client.on('disconnect', () => { this.client.destroy() })
     this.stream.on('timeout', () => { this.client.destroy() })
-    this.client.on('close', () => {
+    this.client.on('close', async () => {
       clearInterval(this.statInterval)
+      await this.app.service('client').patch(this.dbId, { status: 'DISCONNECTED' })
       this.client.destroy()
       let myIndex = this.Broker.clients.findIndex(c => c.uuid === this.client.uuid)
       this.Broker.removeClient(myIndex)
@@ -51,22 +52,30 @@ module.exports = class Client {
   handleStats () {
     let totalBytesRecieved = 0
     let totalBytesSend = 0
-    this.statInterval = setInterval(() => {
-      let lastBytesRecieved = this.stream.bytesWritten - totalBytesRecieved
-      let lastBytesSend = this.stream.bytesRead - totalBytesSend
-      totalBytesRecieved = this.stream.bytesWritten
-      totalBytesSend = this.stream.bytesRead
+    this.statInterval = setInterval(async () => {
+      try {
+        let lastBytesRecieved = this.stream.bytesWritten - totalBytesRecieved
+        let lastBytesSend = this.stream.bytesRead - totalBytesSend
+        totalBytesRecieved = this.stream.bytesWritten
+        totalBytesSend = this.stream.bytesRead
 
-      this.stats.bytesRecieved += lastBytesRecieved
-      this.stats.bytesSend += lastBytesSend
-      this.Broker.stats.bytesRecieved += lastBytesSend
-      this.Broker.stats.bytesSend += lastBytesRecieved
+        if (lastBytesRecieved != 0 || lastBytesSend != 0) {
+          let { totalStats } = await this.app.service('client').get(this.dbId)
+          totalStats.bytesRecieved += lastBytesRecieved
+          totalStats.bytesSend += lastBytesSend
+          await this.app.service('client').patch(this.dbId, { totalStats })
+        }
+
+        this.Broker.stats.bytesRecieved += lastBytesSend
+        this.Broker.stats.bytesSend += lastBytesRecieved
+      } catch (error) {
+        console.error(error)
+      }
     }, 1000)
   }
 
   async handleConnect (packet) {
     if (packet.clientId === 'BROKER') return this.client.connack({ returnCode: 5, messageId: packet.messageId })
-    console.log(packet)
     try {
       let { userId } = parseJwt((await this.app.service('authentication').create({
         strategy: 'local',
@@ -74,16 +83,18 @@ module.exports = class Client {
         password: packet.password.toString()
       }, { provider: 'rest' })).accessToken)
 
-      let clients = await this.app.service('client').find({ clientId: packet.clientId })
+      let clients = await this.app.service('client').find({ query: { clientId: packet.clientId }, paginate: false })
       let client
       if (clients.length !== 0) {
         client = await this.app.service('client').patch(clients[0]._id, {
-          userId
+          userId,
+          status: 'CONNECTED'
         })
       } else {
         client = await this.app.service('client').create({
           clientId: packet.clientId,
-          userId
+          userId,
+          status: 'CONNECTED'
         })
       }
       this.dbId = client._id
@@ -98,9 +109,15 @@ module.exports = class Client {
     }
   }
 
-  handlePublish (packet) {
-    this.stats.messagesSend++
-    this.Broker.distributeMessage(packet)
+  async handlePublish (packet) {
+    try {
+      let { totalStats } = await this.app.service('client').get(this.dbId)
+      totalStats.messagesSend++
+      await this.app.service('client').patch(this.dbId, { totalStats })
+      this.Broker.distributeMessage(packet)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   async handleSubscribe (packet) {
@@ -114,6 +131,7 @@ module.exports = class Client {
       }
       await this.app.service('client').patch(this.dbId, { subscriptions })
       let retainedMessages = await this.app.service('retained-message').find({
+        paginate: false,
         query: {
           topic: {
             $in: [ ...subscriptions.map(v => v.topic) ]
@@ -122,6 +140,9 @@ module.exports = class Client {
       })
       for (let i = 0; i < retainedMessages.length; i++) {
         const retained = retainedMessages[i]
+        let { totalStats } = await this.app.service('client').get(this.dbId)
+        totalStats.messagesRecieved++
+        await this.app.service('client').patch(this.dbId, { totalStats })
         this.client.publish({
           retain: true,
           topic: retained.topic,

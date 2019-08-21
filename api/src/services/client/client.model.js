@@ -10,7 +10,14 @@ module.exports = function (app) {
     clientId: { type: String, default: '' },
     subscriptions: [{
       topic: { type: String }
-    }]
+    }],
+    status: { type: String, default: 'DISCONNECTED', enum: [ 'CONNECTED', 'DISCONNECTED' ] },
+    totalStats: {
+      bytesSend: { type: Number, default: 0 },
+      bytesRecieved: { type: Number, default: 0 },
+      messagesSend: { type: Number, default: 0 },
+      messagesRecieved: { type: Number, default: 0 }
+    }
   }, {
     timestamps: true
   })
