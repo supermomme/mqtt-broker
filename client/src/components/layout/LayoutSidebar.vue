@@ -45,6 +45,30 @@
           <v-list-item-title>Benutzer</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+
+      <v-list-item
+        :to="{ name: 'ClientList' }"
+      >
+        <v-list-item-icon>
+          <v-icon>mdi-server</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title>Clients</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-list-item
+        :to="{ name: 'RetainedMessageList' }"
+      >
+        <v-list-item-icon>
+          <v-icon>mdi-view-list</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-content>
+          <v-list-item-title>Retained</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>

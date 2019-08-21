@@ -37,7 +37,7 @@ const router = new Router({
     {
       name: 'UserList',
       path: '/admin/user',
-      component: () => import('./views/UserList'),
+      component: () => import('./views/User/UserList'),
       meta: {
         layout: 'DefaultLayout'
       }
@@ -45,7 +45,7 @@ const router = new Router({
     {
       name: 'UserCreate',
       path: '/admin/user/create',
-      component: () => import('./views/UserEdit'),
+      component: () => import('./views/User/UserEdit'),
       meta: {
         layout: 'DefaultLayout',
         isCreate: true
@@ -54,10 +54,26 @@ const router = new Router({
     {
       name: 'UserEdit',
       path: '/admin/user/:userId',
-      component: () => import('./views/UserEdit'),
+      component: () => import('./views/User/UserEdit'),
       meta: {
         layout: 'DefaultLayout',
         isCreate: false
+      }
+    },
+    {
+      name: 'ClientList',
+      path: '/admin/client',
+      component: () => import('./views/Client/List'),
+      meta: {
+        layout: 'DefaultLayout'
+      }
+    },
+    {
+      name: 'RetainedMessageList',
+      path: '/admin/retained',
+      component: () => import('./views/RetainedMessage/List'),
+      meta: {
+        layout: 'DefaultLayout'
       }
     }
   ]

@@ -1,25 +1,22 @@
 const net = require('net')
-const websocket = require('websocket-stream') // eslint-disable-line no-unused-vars
-const WebSocketServer = require('ws').Server // eslint-disable-line no-unused-vars
 const Client = require('./Client')
 
 module.exports = class Broker {
-  constructor (opts) {
-    if (opts.logger) this.logger = opts.logger
+  constructor (opts, app) {
     this.host = opts.mqtt.host
-    this.port = opts.mqtt.port
-    this.wsport = opts.mqtt.wsport
+    this.mqPort = Number(opts.mqtt.mqPort)
+    this.app = app
 
-    this.isReadyMQ = false
-    this.isReadyWS = false
+    this.isMQReady = false
 
-    this.server = new net.Server()
-    // this.wsServer = new net.Server()
-
-    this.server.on('connection', socket => this.connectionHandler(socket))
-
-    this.server.listen(this.port, () => this.readyMQ())
-    // this.wsServer.listen(this.wsport, () => this.readyWS())
+    if (this.mqPort) {
+      this.mqServer = new net.Server()
+      this.mqServer.on('connection', socket => this.connectionHandler(socket, false))
+      this.mqServer.listen(this.mqPort, () => {
+        this.isMQReady = true
+        this.ready(this.host, this.mqPort)
+      })
+    }
 
     this.clients = []
 
@@ -28,31 +25,12 @@ module.exports = class Broker {
       bytesRecieved: 0,
       messagesDistributed: 0
     }
-    if (this.logger) setInterval(() => { // Debug
-      this.logger.info('stats', this.stats)
-      this.logger.info('clientCount '+this.clients.length)
-    }, 5000)
-
-  }
-
-  readyMQ () {
-    if (this.logger) this.logger.info('MQTT Broker started on %s:%d', this.host, this.port)
-
-    this.isReadyMQ = true
-    if (this.isReadyWS) this.ready()
-  }
-
-  readyWS () {
-    if (this.logger) this.logger.info('MQTT Broker (Websocket) started on %s:%d', this.host, this.wsport)
-
-    this.isReadyWS = true
-    if (this.isReadyMQ) this.ready()
   }
 
   ready () { }
 
   addClient (stream) {
-    this.clients.push(new Client(stream, this))
+    this.clients.push(new Client(stream, this, this.app))
   }
 
   removeClient (index) {
@@ -60,14 +38,35 @@ module.exports = class Broker {
     this.clients.splice(index, 1)
   }
 
-  distributeMessage (packet) {
-    this.stats.messagesDistributed++
-    let interestedClients = this.clients.filter(client => {
-      return client.amISubscrubedToThis(packet.topic)
-    })
-    for (let i = 0; i < interestedClients.length; i++) {
-      const client = interestedClients[i]
-      client.client.publish(packet)
+  async distributeMessage (packet) {
+    // TODO: save retained
+    try {
+      this.stats.messagesDistributed++
+      for (let i = 0; i < this.clients.length; i++) {
+        const client = this.clients[i]
+        if (!await client.amISubscrubedToThis(packet.topic)) continue
+        client.stats.messagesRecieved++
+        client.client.publish(packet)
+      }
+      if (packet.retain) {
+        let retaineds = await this.app.service('retained-message').find({
+          query: {
+            topic: { $in: [packet.topic] }
+          }
+        })
+        if (retaineds.length === 0) {
+          await this.app.service('retained-message').create({
+            topic: packet.topic,
+            payload: packet.payload
+          })
+        } else {
+          await this.app.service('retained-message').patch(retaineds[0]._id, {
+            payload: packet.payload.toString()
+          })
+        }
+      }
+    } catch (error) {
+      console.error(error)
     }
   }
 
