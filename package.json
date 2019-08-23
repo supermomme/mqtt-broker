@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "docker-compose up --build",
-    "start:prod": "docker-compose up -d -f prod.docker-compose-yml --build",
+    "start:prod": "docker-compose -f prod.docker-compose.yml up -d --build",
     "postinstall": "concurrently \"cd api && npm install\" \"cd client && npm install\"",
     "fix": "concurrently \"cd api && npm run eslint:fix\" \"cd client && npm run lint\""
   },
