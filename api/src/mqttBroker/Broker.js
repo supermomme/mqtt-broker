@@ -39,7 +39,6 @@ module.exports = class Broker {
   }
 
   async distributeMessage (packet) {
-    // TODO: save retained
     try {
       this.stats.messagesDistributed++
       for (let i = 0; i < this.clients.length; i++) {
@@ -69,7 +68,7 @@ module.exports = class Broker {
         }
       }
     } catch (error) {
-      console.error(error)
+      console.error(error) // eslint-disable-line no-console
     }
   }
 

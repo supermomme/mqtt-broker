@@ -33,12 +33,6 @@ module.exports = class Client {
       this.Broker.removeClient(myIndex)
     })
 
-    this.stats = {
-      bytesSend: 0,
-      bytesRecieved: 0,
-      messagesSend: 0,
-      messagesRecieved: 0
-    }
     this.handleStats()
   }
 
@@ -69,7 +63,7 @@ module.exports = class Client {
         this.Broker.stats.bytesRecieved += lastBytesSend
         this.Broker.stats.bytesSend += lastBytesRecieved
       } catch (error) {
-        console.error(error)
+        console.error(error) // eslint-disable-line no-console
       }
     }, 1000)
   }
@@ -104,7 +98,7 @@ module.exports = class Client {
       if (error.code === 401 && error.name === 'NotAuthenticated') {
         this.client.connack({ returnCode: 4, messageId: packet.messageId })
       } else {
-        console.error(error)
+        console.error(error) // eslint-disable-line no-console
       }
     }
   }
@@ -116,7 +110,7 @@ module.exports = class Client {
       await this.app.service('client').patch(this.dbId, { totalStats })
       this.Broker.distributeMessage(packet)
     } catch (error) {
-      console.error(error)
+      console.error(error) // eslint-disable-line no-console
     }
   }
 
@@ -156,7 +150,7 @@ module.exports = class Client {
         granted.push('128')
       }
       this.client.suback({ granted, messageId: packet.messageId })
-      console.error(error)
+      console.error(error) // eslint-disable-line no-console
     }
   }
 
@@ -171,7 +165,7 @@ module.exports = class Client {
       }
       await this.app.service('client').patch(this.dbId, { subscriptions })
     } catch (error) {
-      console.error(error)
+      console.error(error) // eslint-disable-line no-console
     }
   }
 }

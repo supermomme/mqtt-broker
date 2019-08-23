@@ -1,0 +1,47 @@
+version: "3"
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: ./dev.Dockerfile
+    tty: true
+    command: npm run serve
+    environment:
+      - VUE_APP_API_URL=http://api:3030
+    volumes:
+      - ./client/src:/app/src
+    networks:
+      mqtt-dashboard:
+      pub:
+        ipv4_address: 192.168.1.247
+  api:
+    build: ./api
+    command: npm run serve
+    volumes:
+      - ./api/src:/app/src
+      - ./api/public:/app/public
+      - ./api/config:/app/config
+    environment:
+      - NODE_ENV=docker
+    depends_on:
+      - mongo
+    networks:
+      mqtt-dashboard:
+      pub:
+        ipv4_address: 192.168.1.246
+
+  mongo:
+    image: mongo:3.6
+    volumes:
+       - mongodb-data:/data/db
+    logging:
+      driver: none
+    networks:
+      mqtt-dashboard:
+volumes:
+  mongodb-data:
+
+networks:
+  mqtt-dashboard:
+  pub:
+    external: true
