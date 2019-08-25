@@ -70,6 +70,7 @@ module.exports = class Client {
 
   async handleConnect (packet) {
     if (packet.clientId === 'BROKER') return this.client.connack({ returnCode: 5, messageId: packet.messageId })
+    if (!packet.username || !packet.password) return this.client.connack({ returnCode: 4, messageId: packet.messageId })
     try {
       let { userId } = parseJwt((await this.app.service('authentication').create({
         strategy: 'local',

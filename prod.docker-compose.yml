@@ -5,12 +5,13 @@ services:
       context: ./client
       dockerfile: ./Dockerfile
     tty: true
-    environment:
-      - VUE_APP_API_URL=http://api:3030
+    depends_on:
+      - api
     networks:
       mqtt-dashboard:
       pub:
-        ipv4_address: 192.168.1.247
+        ipv4_address: 10.0.100.11
+    restart: always
   api:
     build: ./api
     environment:
@@ -20,8 +21,8 @@ services:
     networks:
       mqtt-dashboard:
       pub:
-        ipv4_address: 192.168.1.246
-
+        ipv4_address: 10.0.100.10
+    restart: always
   mongo:
     image: mongo:3.6
     volumes:
@@ -30,6 +31,8 @@ services:
       driver: none
     networks:
       mqtt-dashboard:
+    restart: always
+
 volumes:
   mongodb-data_prod:
 
