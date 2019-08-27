@@ -4,6 +4,7 @@ services:
     build:
       context: ./client
       dockerfile: ./dev.Dockerfile
+    container_name: client_dev
     tty: true
     command: npm run serve
     environment:
@@ -14,6 +15,7 @@ services:
       - 8080:8080
   api:
     build: ./api
+    container_name: api_dev
     command: npm run serve
     volumes:
       - ./api/src:/app/src
@@ -28,6 +30,7 @@ services:
       - 1884:1883
   mongo:
     image: mongo:3.6
+    container_name: mongo_dev
     volumes:
        - mongodb-data:/data/db
     ports:
