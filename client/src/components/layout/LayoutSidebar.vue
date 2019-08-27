@@ -59,7 +59,7 @@
       </v-list-item>
 
       <v-list-item
-        :to="{ name: 'RetainedMessageList' }"
+        :to="{ name: 'RetainList' }"
       >
         <v-list-item-icon>
           <v-icon>mdi-view-list</v-icon>

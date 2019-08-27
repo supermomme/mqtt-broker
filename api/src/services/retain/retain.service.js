@@ -1,7 +1,7 @@
-// Initializes the `retained-message` service on path `/retained-message`
+// Initializes the `retain` service on path `/retain`
 const createService = require('feathers-mongoose')
-const createModel = require('./retained-message.model')
-const hooks = require('./retained-message.hooks')
+const createModel = require('./retain.model')
+const hooks = require('./retain.hooks')
 
 module.exports = function (app) {
   const Model = createModel(app)
@@ -13,10 +13,10 @@ module.exports = function (app) {
   }
 
   // Initialize our service with any options it requires
-  app.use('/retained-message', createService(options))
+  app.use('/retain', createService(options))
 
   // Get our initialized service so that we can register hooks
-  const service = app.service('retained-message')
+  const service = app.service('retain')
 
   service.hooks(hooks)
 }

@@ -69,9 +69,9 @@ const router = new Router({
       }
     },
     {
-      name: 'RetainedMessageList',
-      path: '/admin/retained',
-      component: () => import('./views/RetainedMessage/List'),
+      name: 'RetainList',
+      path: '/admin/retain',
+      component: () => import('./views/Retain/List'),
       meta: {
         layout: 'DefaultLayout'
       }

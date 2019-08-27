@@ -1,4 +1,3 @@
 {
-  "host": "api-app.feathersjs.com",
-  "port": "PORT"
+  "mongodb": "mongodb://mongo:27017/mqtt-broker"
 }

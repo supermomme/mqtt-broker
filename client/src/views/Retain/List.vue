@@ -22,7 +22,7 @@
         <v-container>
           <basic-table
             :fields="fields"
-            service="retained-message"
+            service="retain"
           />
         </v-container>
       </v-card>
@@ -34,7 +34,7 @@
 import BasicTable from '@/components/BasicComponents/BasicTable.vue'
 import BasicBreadcrumbs from '@/components/BasicComponents/BasicBreadcrumbs.vue'
 export default {
-  name: 'ClientList',
+  name: 'RetainList',
   components: {
     BasicTable,
     BasicBreadcrumbs
@@ -42,12 +42,17 @@ export default {
   data: () => ({
     breadcrumb: [
       { text: 'Dashboard', to: { name: 'Dashboard' } },
-      { text: 'Retained', to: { name: 'ClientList' } }
-    ],
-    fields: [
-      { text: 'Topic', value: 'topic' },
-      { text: 'Payload', value: 'payload' }
+      { text: 'Retained', to: { name: 'RetainList' } }
     ]
-  })
+  }),
+  computed: {
+    fields () {
+      return [
+        { text: 'Topic', value: 'topic' },
+        { text: 'Payload', value: 'payload' },
+        { text: 'Updated', value: 'updatedAt', formatter: value => this.$moment(value).format('DD.MM.YYYY HH:mm') }
+      ]
+    }
+  }
 }
 </script>

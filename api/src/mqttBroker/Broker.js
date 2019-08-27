@@ -49,24 +49,6 @@ module.exports = class Broker {
         await this.app.service('client').patch(client.dbId, { totalStats })
         client.client.publish(packet)
       }
-      if (packet.retain) {
-        let retaineds = await this.app.service('retained-message').find({
-          query: {
-            topic: { $in: [packet.topic] }
-          },
-          paginate: false
-        })
-        if (retaineds.length === 0) {
-          await this.app.service('retained-message').create({
-            topic: packet.topic,
-            payload: packet.payload
-          })
-        } else {
-          await this.app.service('retained-message').patch(retaineds[0]._id, {
-            payload: packet.payload.toString()
-          })
-        }
-      }
     } catch (error) {
       console.error(error) // eslint-disable-line no-console
     }

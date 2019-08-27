@@ -3,7 +3,7 @@
     <v-flex>
       <v-data-table
         :headers="fields"
-        :page="page"
+        :page.sync="page"
         :items="data"
         :items-per-page.sync="itemsPerPage"
         :loading="loading"
@@ -14,7 +14,15 @@
           'disable-items-per-page': true
         }"
         @click:row="$emit('rowClicked', $event)"
-      />
+      >
+        <template
+          v-for="field in formattedFields"
+          :slot="'item.'+field.value"
+          scope="{ item }"
+        >
+          <span :key="field.value">{{ field.formatter(item[field.value]) }}</span>
+        </template>
+      </v-data-table>
     </v-flex>
     <v-flex><dev :data="{data}" /></v-flex>
   </v-layout>
@@ -50,6 +58,9 @@ export default {
     total: 0
   }),
   computed: {
+    formattedFields () {
+      return this.fields.filter(v => !!v.formatter)
+    },
     data () {
       let response = this.$store.getters[`${this.service}/find`]({ query: this.query })
       return response.data

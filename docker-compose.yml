@@ -1,6 +1,6 @@
 version: "3"
 services:
-  client:
+  client_dev:
     build:
       context: ./client
       dockerfile: ./dev.Dockerfile
@@ -8,12 +8,14 @@ services:
     tty: true
     command: npm run serve
     environment:
-      - VUE_APP_API_URL=http://api:3030
+      - VUE_APP_API_URL=http://api_dev:3030
     volumes:
       - ./client/src:/app/src
     ports:
       - 8080:8080
-  api:
+    depends_on:
+      - api_dev
+  api_dev:
     build: ./api
     container_name: api_dev
     command: npm run serve
@@ -24,11 +26,11 @@ services:
     environment:
       - NODE_ENV=docker
     depends_on:
-      - mongo
+      - mongo_dev
     ports:
       - 3000:3000
       - 1884:1883
-  mongo:
+  mongo_dev:
     image: mongo:3.6
     container_name: mongo_dev
     volumes:

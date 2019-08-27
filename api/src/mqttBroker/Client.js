@@ -3,6 +3,8 @@ const MQTTPattern = require('mqtt-pattern')
 const uuidv4 = require('uuid/v4')
 const atob = require('atob')
 
+console.log('HEY-------------------------------------')
+console.log(MQTTPattern.exec('home/garden/+', 'home/garden/fountain/bla'))
 module.exports = class Client {
   constructor (stream, Broker, app) {
     this.Broker = Broker
@@ -27,7 +29,7 @@ module.exports = class Client {
     this.stream.on('timeout', () => { this.client.destroy() })
     this.client.on('close', async () => {
       clearInterval(this.statInterval)
-      await this.app.service('client').patch(this.dbId, { status: 'DISCONNECTED' })
+      await this.app.service('client').patch(this.dbId, { status: 'DISCONNECTED', subscriptions: [] })
       this.client.destroy()
       let myIndex = this.Broker.clients.findIndex(c => c.uuid === this.client.uuid)
       this.Broker.removeClient(myIndex)
@@ -71,6 +73,7 @@ module.exports = class Client {
   async handleConnect (packet) {
     if (packet.clientId === 'BROKER') return this.client.connack({ returnCode: 5, messageId: packet.messageId })
     if (!packet.username || !packet.password) return this.client.connack({ returnCode: 4, messageId: packet.messageId })
+    console.log(packet)
     try {
       let { userId } = parseJwt((await this.app.service('authentication').create({
         strategy: 'local',
@@ -105,10 +108,30 @@ module.exports = class Client {
   }
 
   async handlePublish (packet) {
+    if (packet.topic.includes('+') || packet.topic.includes('#')) return
     try {
       let { totalStats } = await this.app.service('client').get(this.dbId)
       totalStats.messagesSend++
       await this.app.service('client').patch(this.dbId, { totalStats })
+      if (packet.retain) {
+        let retains = await this.app.service('retain').find({
+          query: {
+            topic: { $in: [packet.topic] }
+          },
+          paginate: false
+        })
+        if (retains.length === 0) {
+          await this.app.service('retain').create({
+            topic: packet.topic,
+            payload: packet.payload
+          })
+        } else {
+          await this.app.service('retain').patch(retains[0]._id, {
+            payload: packet.payload.toString()
+          })
+        }
+
+      }
       this.Broker.distributeMessage(packet)
     } catch (error) {
       console.error(error) // eslint-disable-line no-console
@@ -118,32 +141,34 @@ module.exports = class Client {
   async handleSubscribe (packet) {
     try {
       let { subscriptions } = await this.app.service('client').get(this.dbId)
-      if (subscriptions.findIndex(v => v.topic === packet.topic) === -1) {
-        subscriptions.push(...packet.subscriptions.map(value => ({
-          topic: value.topic
-          // TODO: add qos
-        })))
-      }
-      await this.app.service('client').patch(this.dbId, { subscriptions })
-      let retainedMessages = await this.app.service('retained-message').find({
-        paginate: false,
-        query: {
-          topic: {
-            $in: [ ...subscriptions.map(v => v.topic) ]
-          }
+      for (let a = 0; a < packet.subscriptions.length; a++) {
+        const { topic } = packet.subscriptions[a] // and qos
+        if (subscriptions.findIndex(v => v.topic === topic) === -1) {
+          subscriptions.push(...packet.subscriptions.map(value => ({
+            topic: value.topic
+            // TODO: add qos
+          })))
         }
-      })
+        await this.app.service('client').patch(this.dbId, { subscriptions })
+      }
+
+      let retainedMessages = await this.app.service('retain-match').find({ topics: [...subscriptions.map(v => v.topic)] })
+      console.log(retainedMessages)
       for (let i = 0; i < retainedMessages.length; i++) {
         const retained = retainedMessages[i]
         let { totalStats } = await this.app.service('client').get(this.dbId)
         totalStats.messagesRecieved++
         await this.app.service('client').patch(this.dbId, { totalStats })
-        this.client.publish({
+        console.log('publush ', retained)
+        await this.client.publish({
           retain: true,
           topic: retained.topic,
+          qos: 0,
           payload: retained.payload
         })
+        console.log('finished publish')
       }
+
       this.client.suback({ granted: [packet.qos], messageId: packet.messageId })
     } catch (error) {
       let granted = []
