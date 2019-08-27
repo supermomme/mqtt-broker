@@ -134,7 +134,7 @@ module.exports = class Client {
     }
   }
 
-  async updateSubs () {
+  async updateSubscription () {
     await this.app.service('client').patch(this.dbId, { subscriptions: this.subscriptions })
 
   }
@@ -149,7 +149,7 @@ module.exports = class Client {
             // TODO: add qos
           })))
         }
-        this.updateSubs()
+        this.updateSubscription()
       }
 
       let retainedMessages = await this.app.service('retain-match').find({ topics: [...this.subscriptions.map(v => v.topic)] })
@@ -185,7 +185,7 @@ module.exports = class Client {
           return !(sub.topic === unsub)
         })
       }
-      this.updateSubs()
+      this.updateSubscription()
     } catch (error) {
       console.error(error) // eslint-disable-line no-console
     }
