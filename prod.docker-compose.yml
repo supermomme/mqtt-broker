@@ -34,6 +34,8 @@ services:
       driver: none
     networks:
       mqtt-dashboard:
+      pub:
+        ipv4_address: 10.0.100.9
     restart: always
 
 volumes:

@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 const mqtt_regex = require('mqtt-regex')
-console.log(mqtt_regex('#').regex)
 
 class Service {
   constructor (options) {

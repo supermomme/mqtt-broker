@@ -25,6 +25,23 @@ module.exports = class Broker {
       bytesRecieved: 0,
       messagesDistributed: 0
     }
+    setInterval(() => this.checkConnections(), 30000)
+  }
+
+  async checkConnections () {
+    let dbClients = await this.app.service('client').find({
+      paginate: false,
+      query: {
+        status: { $nin: ['DISCONNECTED'] }
+      }
+    })
+    for (let i = 0; i < dbClients.length; i++) {
+      const dbClient = dbClients[i]
+      let bla = this.clients.findIndex(client => client.dbId.toString() === dbClient._id.toString())
+      if (bla === -1) {
+        await this.app.service('client').patch(dbClient._id, { status: 'DISCONNECTED' })
+      }
+    }
   }
 
   ready () { }

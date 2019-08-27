@@ -3,8 +3,6 @@ const MQTTPattern = require('mqtt-pattern')
 const uuidv4 = require('uuid/v4')
 const atob = require('atob')
 
-console.log('HEY-------------------------------------')
-console.log(MQTTPattern.exec('home/garden/+', 'home/garden/fountain/bla'))
 module.exports = class Client {
   constructor (stream, Broker, app) {
     this.Broker = Broker
@@ -12,7 +10,7 @@ module.exports = class Client {
     this.uuid = uuidv4()
     this.stream = stream
     this.client = mqttCon(stream)
-    // this.subscriptions = []
+    this.subscriptions = []
     // this.id = null
     this.dbId = null
 
@@ -27,10 +25,10 @@ module.exports = class Client {
     this.client.on('error', () => { this.client.destroy() })
     this.client.on('disconnect', () => { this.client.destroy() })
     this.stream.on('timeout', () => { this.client.destroy() })
-    this.client.on('close', async () => {
+    this.client.on('close', () => { this.client.destroy() })
+    this.stream.on('close', async () => {
       clearInterval(this.statInterval)
       await this.app.service('client').patch(this.dbId, { status: 'DISCONNECTED', subscriptions: [] })
-      this.client.destroy()
       let myIndex = this.Broker.clients.findIndex(c => c.uuid === this.client.uuid)
       this.Broker.removeClient(myIndex)
     })
@@ -39,8 +37,7 @@ module.exports = class Client {
   }
 
   async amISubscrubedToThis (topic) {
-    let { subscriptions } = await this.app.service('client').get(this.dbId)
-    return subscriptions.filter((t) => {
+    return this.subscriptions.filter((t) => {
       return MQTTPattern.matches(t.topic, topic)
     }).length !== 0
   }
@@ -73,7 +70,6 @@ module.exports = class Client {
   async handleConnect (packet) {
     if (packet.clientId === 'BROKER') return this.client.connack({ returnCode: 5, messageId: packet.messageId })
     if (!packet.username || !packet.password) return this.client.connack({ returnCode: 4, messageId: packet.messageId })
-    console.log(packet)
     try {
       let { userId } = parseJwt((await this.app.service('authentication').create({
         strategy: 'local',
@@ -138,35 +134,36 @@ module.exports = class Client {
     }
   }
 
+  async updateSubs () {
+    await this.app.service('client').patch(this.dbId, { subscriptions: this.subscriptions })
+
+  }
+
   async handleSubscribe (packet) {
     try {
-      let { subscriptions } = await this.app.service('client').get(this.dbId)
       for (let a = 0; a < packet.subscriptions.length; a++) {
         const { topic } = packet.subscriptions[a] // and qos
-        if (subscriptions.findIndex(v => v.topic === topic) === -1) {
-          subscriptions.push(...packet.subscriptions.map(value => ({
+        if (this.subscriptions.findIndex(v => v.topic === topic) === -1) {
+          this.subscriptions.push(...packet.subscriptions.map(value => ({
             topic: value.topic
             // TODO: add qos
           })))
         }
-        await this.app.service('client').patch(this.dbId, { subscriptions })
+        this.updateSubs()
       }
 
-      let retainedMessages = await this.app.service('retain-match').find({ topics: [...subscriptions.map(v => v.topic)] })
-      console.log(retainedMessages)
+      let retainedMessages = await this.app.service('retain-match').find({ topics: [...this.subscriptions.map(v => v.topic)] })
       for (let i = 0; i < retainedMessages.length; i++) {
         const retained = retainedMessages[i]
         let { totalStats } = await this.app.service('client').get(this.dbId)
         totalStats.messagesRecieved++
         await this.app.service('client').patch(this.dbId, { totalStats })
-        console.log('publush ', retained)
         await this.client.publish({
           retain: true,
           topic: retained.topic,
           qos: 0,
           payload: retained.payload
         })
-        console.log('finished publish')
       }
 
       this.client.suback({ granted: [packet.qos], messageId: packet.messageId })
@@ -182,14 +179,13 @@ module.exports = class Client {
 
   async handleUnsubscribe (packet) {
     try {
-      let { subscriptions } = await this.app.service('client').get(this.dbId)
       for (let i = 0; i < packet.unsubscriptions.length; i++) {
         let unsub = packet.unsubscriptions[i]
-        subscriptions = subscriptions.filter(sub => {
+        this.subscriptions = this.subscriptions.filter(sub => {
           return !(sub.topic === unsub)
         })
       }
-      await this.app.service('client').patch(this.dbId, { subscriptions })
+      this.updateSubs()
     } catch (error) {
       console.error(error) // eslint-disable-line no-console
     }
