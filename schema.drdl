@@ -1,0 +1,23 @@
+schema:
+- db: mqtt-broker
+  tables:
+  - table: retain
+    collection: retain
+    pipeline: []
+    columns:
+    - Name: __v
+      MongoType: int
+      SqlName: __v
+      SqlType: int
+    - Name: _id
+      MongoType: string
+      SqlName: _id
+      SqlType: varchar
+    - Name: topic
+      MongoType: String
+      SqlName: topic
+      SqlType: string
+    - Name: payload
+      MongoType: String
+      SqlName: payload
+      SqlType: string

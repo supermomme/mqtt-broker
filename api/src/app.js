@@ -9,6 +9,7 @@ const feathers = require('@feathersjs/feathers')
 const configuration = require('@feathersjs/configuration')
 const express = require('@feathersjs/express')
 const socketio = require('@feathersjs/socketio')
+const { prometheus, health } = require('@codeanker/feathers-kubernetes')
 
 const middleware = require('./middleware')
 const services = require('./services')
@@ -37,10 +38,13 @@ app.use('/', express.static(app.get('public')))
 
 // Set up Plugins and providers
 app.configure(express.rest())
-app.configure(socketio())
+app.configure(socketio({ transports: ['websocket'] }))
 
 app.configure(mqttBroker)
 app.configure(mongoose)
+
+app.configure(prometheus()) 
+app.configure(health())
 
 // Configure other middleware (see `middleware/index.js`)
 app.configure(middleware)

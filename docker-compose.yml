@@ -1,23 +1,23 @@
 version: "3"
 services:
-  client_dev:
+  client:
     build:
       context: ./client
       dockerfile: ./dev.Dockerfile
-    container_name: client_dev
+    container_name: client
     tty: true
     command: npm run serve
     environment:
-      - VUE_APP_API_URL=http://api_dev:3030
+      - VUE_APP_API_URL=http://api:3030
     volumes:
       - ./client/src:/app/src
     ports:
       - 8080:8080
     depends_on:
-      - api_dev
-  api_dev:
+      - api
+  api:
     build: ./api
-    container_name: api_dev
+    container_name: api
     command: npm run serve
     volumes:
       - ./api/src:/app/src
@@ -26,29 +26,52 @@ services:
     environment:
       - NODE_ENV=docker
     depends_on:
-      - mongo_dev
+      - mongo
     ports:
-      - 3000:3000
+      - 3030:3030
       - 1884:1883
-  mongo_dev:
+  cube:
+    build: ./cubejs
+    # env_file: ./cubejs/.env
+    ports:
+      - 4000:4000
+    volumes:
+      - ./cubejs/schema:/usr/src/app/schema
+    command: node index.js
+    environment:
+      - CUBEJS_DB_HOST=mongo-bi-connector
+      - CUBEJS_DB_PORT=3307
+      - CUBEJS_DB_NAME=mqtt-broker
+      #- CUBEJS_DB_USER=
+      #- CUBEJS_DB_PASS=
+      - CUBEJS_DB_TYPE=mongobi
+      - CUBEJS_API_SECRET=470a6d4d1852e48e20ff9e2ff6fcf2b2350e73ed64d3d02bd435d376d8446b128c9e92f95e8c9ba42abdbc8128ca25f3ff3a90989241ca7ea1aee8dbe7f9507e
+    depends_on:
+      - mongo-bi-connector
+  mongo:
     image: mongo:3.6
-    container_name: mongo_dev
+    container_name: mongo
     volumes:
        - mongodb-data:/data/db
     ports:
       - 27017:27017
     logging:
       driver: none
+  mongo-bi-connector:
+    image: 'codeanker/docker-mongo-bi-connector'
+    ports:
+      - 3307:3307
+    command: wait-and-run.sh
+    volumes:
+      - ./shema.drdl:/etc/mongodb-bi-connector/schema/mongomysqlmap.drdl
+    depends_on:
+      - mongo
+    environment:
+      DB_NAME : mqtt-broker
+      MONGO_HOST : mongo
+      MONGO_PORT : 27017
+      SCHEMA_PATH : /etc/mongodb-bi-connector/schema/mongomysqlmap.drdl
+      ADDR : mongo-bi-connector:3307
 
-  # nginx:
-  #   image: nginx:latest
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
-  #   depends_on:
-  #     - client
-  #     - api
-  #   ports:
-  #     - 8080:8080
-  #     - 3031:3031
 volumes:
   mongodb-data:
