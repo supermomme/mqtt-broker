@@ -2,6 +2,7 @@ name: Docker Image
 
 on: [push]
 
+
 jobs:
 
   build:
@@ -13,5 +14,5 @@ jobs:
     - name: Build the API Docker image
       run: |
         docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA}
-        docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
+        echo ${DOCKER_USERNAME}
         docker push supermomme/mqtt_api:${GITHUB_SHA}
