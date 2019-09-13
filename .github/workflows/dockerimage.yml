@@ -5,10 +5,9 @@ on: [push]
 
 jobs:
 
-  build:
- 
+  build-api:
+    name: Build Api
     runs-on: ubuntu-latest
- 
     steps:
     - uses: actions/checkout@master
     - name: Docker Login
@@ -16,10 +15,44 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" --password-stdin
-    - name: Build the API Docker image
+    - name: Build the Docker image
       run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA} --tag supermomme/mqtt_api:master
     - name: Push Docker Image
       run: docker push supermomme/mqtt_api:${GITHUB_SHA}
     - name: Push Docker master Image if master
       if: github.ref == 'refs/heads/master'
       run: docker push supermomme/mqtt_api:master
+  build-client:
+    name: Build Client
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Docker Login
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" --password-stdin
+    - name: Build the Docker image
+      run: docker build ./client --file ./client/Dockerfile --tag supermomme/mqtt_client:${GITHUB_SHA} --tag supermomme/mqtt_client:master
+    - name: Push Docker Image
+      run: docker push supermomme/mqtt_client:${GITHUB_SHA}
+    - name: Push Docker master Image if master
+      if: github.ref == 'refs/heads/master'
+      run: docker push supermomme/mqtt_client:master
+  build-cubejs:
+    name: Build CubeJS
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Docker Login
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" --password-stdin
+    - name: Build the Docker image
+      run: docker build ./cubejs --file ./cubejs/Dockerfile --tag supermomme/mqtt_cubejs:${GITHUB_SHA} --tag supermomme/mqtt_cubejs:master
+    - name: Push Docker Image
+      run: docker push supermomme/mqtt_cubejs:${GITHUB_SHA}
+    - name: Push Docker master Image if master
+      if: github.ref == 'refs/heads/master'
+      run: docker push supermomme/mqtt_cubejs:master
