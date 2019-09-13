@@ -10,12 +10,9 @@ jobs:
     runs-on: ubuntu-latest
  
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@master
+    - uses: actions/docker/login@master
     - name: Build the API Docker image
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: |
-        docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${{github.ref}}
-        docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
-        docker push supermomme/mqtt_api:${{github.ref}}
+      run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA}
+    - name: Push Docker Image
+      run: docker push supermomme/mqtt_api:${GITHUB_SHA}
