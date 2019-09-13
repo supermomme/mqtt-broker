@@ -21,5 +21,5 @@ jobs:
     - name: Push Docker Image
       run: docker push supermomme/mqtt_api:${GITHUB_SHA}
     - name: Push Docker Image to master if master
-      if: ${{github.ref}} == refs/heads/master
+      if: github.ref == "refs/heads/master"
       run: docker push supermomme/mqtt_api:master
