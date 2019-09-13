@@ -25,7 +25,7 @@ module.exports = class Broker {
       bytesRecieved: 0,
       messagesDistributed: 0
     }
-    setInterval(() => this.cleanup(), 30000)
+    setInterval(async () => await this.cleanup(), 30000)
   }
 
   async cleanup () {

@@ -108,7 +108,14 @@ module.exports = class Client {
 
   async handlePublish (packet) {
     if (packet.topic.includes('+') || packet.topic.includes('#')) return
-    this.Broker.distributeMessage(packet, this)
+    try {
+      let { totalStats } = await this.app.service('client').get(this.dbId)	
+      totalStats.messagesSend++	
+      await this.app.service('client').patch(this.dbId, { totalStats })
+      await this.Broker.distributeMessage(packet, this)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   async updateSubscription () {
@@ -129,7 +136,6 @@ module.exports = class Client {
         this.updateSubscription()
       }
 
-      // let retainedMessages = await this.app.service('retain-match').find({ topics: [...this.subscriptions.map(v => v.topic)] })
       let topics = [...this.subscriptions.map(v => v.topic)]
       let retainedMessages = []
       for (let i = 0; i < topics.length; i++) {
