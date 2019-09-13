@@ -1,0 +1,17 @@
+name: Docker Image
+
+on: [push]
+
+jobs:
+  name: Docker Build
+  build:
+ 
+    runs-on: ubuntu-latest
+ 
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the API Docker image
+      run: |
+        docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA}
+        docker login --username ${DOCKER_USERNAME} --password ${DOCKER_PASSWORD}
+        docker push supermomme/mqtt_api:${GITHUB_SHA}
