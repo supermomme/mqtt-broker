@@ -29,30 +29,34 @@ module.exports = class Broker {
   }
 
   async cleanup () {
-    let dbClients = await this.app.service('client').find({
-      paginate: false,
-      query: {
-        $or: [
-          { status: { $nin: ['DISCONNECTED'] } },
-          { subscriptions: { $ne: [] } }
-        ]
+    try {
+      let dbClients = await this.app.service('client').find({
+        paginate: false,
+        query: {
+          $or: [
+            { status: { $nin: ['DISCONNECTED'] } },
+            { subscriptions: { $ne: [] } }
+          ]
+        }
+      })
+      for (let i = 0; i < dbClients.length; i++) {
+        const dbClient = dbClients[i]
+        if (this.clients.findIndex(client => client.dbId.toString() === dbClient._id.toString()) === -1) {
+          await this.app.service('client').patch(dbClient._id, { status: 'DISCONNECTED', subscriptions: [] })
+        }
       }
-    })
-    for (let i = 0; i < dbClients.length; i++) {
-      const dbClient = dbClients[i]
-      if (this.clients.findIndex(client => client.dbId.toString() === dbClient._id.toString()) === -1) {
-        await this.app.service('client').patch(dbClient._id, { status: 'DISCONNECTED', subscriptions: [] })
+      for (let g = 0; g < this.clients.length; g++) {
+        let subscriptions = this.clients[g].subscriptions.reduce((prev, cur) => {
+          if (prev.findIndex(v => v.topic === cur.topic) === -1) prev.push(cur)
+          return prev
+        }, [])
+        if (subscriptions.length !== this.clients[g].subscriptions) {
+          this.clients[g].subscriptions = subscriptions
+          this.clients[g].updateSubscription()
+        }
       }
-    }
-    for (let g = 0; g < this.clients.length; g++) {
-      let subscriptions = this.clients[g].subscriptions.reduce((prev, cur) => {
-        if (prev.findIndex(v => v.topic === cur.topic) === -1) prev.push(cur)
-        return prev
-      }, [])
-      if (subscriptions.length !== this.clients[g].subscriptions) {
-        this.clients[g].subscriptions = subscriptions
-        this.clients[g].updateSubscription()
-      }
+    } catch (error) {
+      console.error(error)
     }
   }
 
