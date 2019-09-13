@@ -20,3 +20,5 @@ jobs:
       run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA}
     - name: Push Docker Image
       run: docker push supermomme/mqtt_api:${GITHUB_SHA}
+    - name: Push Docker Image to master if master
+      run: echo ${{github.ref}}
