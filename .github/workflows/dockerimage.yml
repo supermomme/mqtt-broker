@@ -13,7 +13,7 @@ jobs:
     - name: Test
       #if: github.ref == "refs/heads/master"
       #run: docker push supermomme/mqtt_api:master
-      run: echo ${{github.ref}} ${{ github.ref == "refs/head/master" }}
+      run: echo ${{github.ref}} ${{ github.ref == 'refs/heads/master' }}
     - uses: actions/checkout@master
     - name: Docker Login
       env:
