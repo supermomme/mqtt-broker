@@ -1,5 +1,6 @@
 const net = require('net')
 const Client = require('./Client')
+const isJSON = require('is-json')
 
 module.exports = class Broker {
   constructor (opts, app) {
@@ -73,16 +74,14 @@ module.exports = class Broker {
 
   async distributeMessage (packet, fromClient) {
     let parsedPayload;
-    try {
-      parsedPayload= JSON.parse(packet.payload)
-    } catch (e) {
+    if (isJSON(packet.payload)) {
+      parsedPayload = JSON.parse(packet.payload)
+    } else {
       parsedPayload = { val: packet.payload.toString() }
-    } finally {
-      if(parsedPayload.ts == undefined) parsedPayload.ts = Date.now()
     }
-    console.log(parsedPayload)
+    if(parsedPayload.ts == undefined) parsedPayload.ts = Date.now()
+
     try {
-      console.log(packet)
       await this.app.service('message').create({
         topic: packet.topic,
         retain: packet.retain,
