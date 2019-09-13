@@ -11,7 +11,7 @@ jobs:
  
     steps:
     - uses: actions/checkout@v1
-    - name: Build the API Docker image supermomme/mqtt_api:${{GITHUB_SHA}}
+    - name: Build the API Docker image
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
