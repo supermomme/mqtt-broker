@@ -15,10 +15,11 @@ jobs:
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+      run: echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" --password-stdin
     - name: Build the API Docker image
       run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA}
     - name: Push Docker Image
       run: docker push supermomme/mqtt_api:${GITHUB_SHA}
     - name: Push Docker Image to master if master
-      run: echo ${{github.ref}}
+      if: ${{github.ref}} == refs/heads/master
+      run: docker push supermomme/mqtt_api:master
