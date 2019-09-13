@@ -11,7 +11,11 @@ jobs:
  
     steps:
     - uses: actions/checkout@master
-    - uses: actions/docker/login@master
+    - name: Docker Login
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
     - name: Build the API Docker image
       run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA}
     - name: Push Docker Image
