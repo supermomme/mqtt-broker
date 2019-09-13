@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
  
     steps:
+    - name: Test
+      #if: github.ref == "refs/heads/master"
+      #run: docker push supermomme/mqtt_api:master
+      run: echo ${{github.ref}} ${{ github.ref == 'refs/head/master' }}
     - uses: actions/checkout@master
     - name: Docker Login
       env:
@@ -20,7 +24,3 @@ jobs:
       run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA}
     - name: Push Docker Image
       run: docker push supermomme/mqtt_api:${GITHUB_SHA}
-    - name: Push Docker Image to master if master
-      #if: github.ref == "refs/heads/master"
-      #run: docker push supermomme/mqtt_api:master
-      run: echo ${{ github.ref == 'refs/head/master' }}
