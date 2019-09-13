@@ -67,8 +67,27 @@ module.exports = class Broker {
     this.clients.splice(index, 1)
   }
 
-  async distributeMessage (packet) {
+  async distributeMessage (packet, fromClient) {
+    let parsedPayload;
     try {
+      parsedPayload= JSON.parse(packet.payload)
+    } catch (e) {
+      parsedPayload = { val: packet.payload.toString() }
+    } finally {
+      if(parsedPayload.ts == undefined) parsedPayload.ts = Date.now()
+    }
+    console.log(parsedPayload)
+    try {
+      console.log(packet)
+      await this.app.service('message').create({
+        topic: packet.topic,
+        retain: packet.retain,
+        payload: parsedPayload,
+        clientId: fromClient.dbId,
+        userId: fromClient.userId,
+        messageId: packet.messageId,
+        qos: packet.qos
+      })
       this.stats.messagesDistributed++
       for (let i = 0; i < this.clients.length; i++) {
         const client = this.clients[i]
@@ -76,7 +95,9 @@ module.exports = class Broker {
         let { totalStats } = await this.app.service('client').get(client.dbId)
         totalStats.messagesRecieved++
         await this.app.service('client').patch(client.dbId, { totalStats })
-        client.client.publish(packet)
+        let parsedPacket = packet
+        parsedPacket.payload = Buffer.from(JSON.stringify(parsedPayload))
+        client.client.publish(parsedPacket)
       }
     } catch (error) {
       console.error(error) // eslint-disable-line no-console

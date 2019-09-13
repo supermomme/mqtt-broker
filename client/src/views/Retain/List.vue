@@ -22,7 +22,8 @@
         <v-container>
           <basic-table
             :fields="fields"
-            service="retain"
+            service="message"
+            :base-query="baseQuery"
           />
         </v-container>
       </v-card>
@@ -43,13 +44,16 @@ export default {
     breadcrumb: [
       { text: 'Dashboard', to: { name: 'Dashboard' } },
       { text: 'Retained', to: { name: 'RetainList' } }
-    ]
+    ],
+    baseQuery: {
+      retain: true
+    }
   }),
   computed: {
     fields () {
       return [
         { text: 'Topic', value: 'topic' },
-        { text: 'Payload', value: 'payload' },
+        { text: 'Payload', value: 'payload', formatter: value => JSON.stringify(value) },
         { text: 'Updated', value: 'updatedAt', formatter: value => this.$moment(value).format('DD.MM.YYYY HH:mm') }
       ]
     }

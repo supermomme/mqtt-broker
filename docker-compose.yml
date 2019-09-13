@@ -72,6 +72,8 @@ services:
       MONGO_PORT : 27017
       SCHEMA_PATH : /etc/mongodb-bi-connector/schema/mongomysqlmap.drdl
       ADDR : mongo-bi-connector:3307
+    logging:
+      driver: none
 
 volumes:
   mongodb-data:

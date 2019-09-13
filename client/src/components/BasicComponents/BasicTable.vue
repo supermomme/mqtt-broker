@@ -18,7 +18,7 @@
         <template
           v-for="field in formattedFields"
           :slot="'item.'+field.value"
-          scope="{ item }"
+          slot-scope="{ item }"
         >
           <span :key="field.value">{{ field.formatter(item[field.value]) }}</span>
         </template>
@@ -47,6 +47,10 @@ export default {
     toName: {
       type: String,
       default: null
+    },
+    baseQuery: {
+      type: Object,
+      default: () => ({})
     }
   },
   data: () => ({
@@ -66,10 +70,10 @@ export default {
       return response.data
     },
     query () {
-      let query = {
-        $limit: this.itemsPerPage,
-        $skip: (this.page - 1) * this.itemsPerPage
-      }
+      let query = this.baseQuery
+      query.$limit = this.itemsPerPage
+      query.$skip = (this.page - 1) * this.itemsPerPage
+
       if (this.sortBy.length !== 0) {
         query.$sort = {}
         for (let i = 0; i < this.sortBy.length; i++) {
@@ -88,11 +92,11 @@ export default {
   },
   methods: {
     async fetchData () {
-      console.log('fetch')
       try {
         this.loading = true
-        let res = await this.$store.dispatch(`${this.service}/find`, { query: this.query })
+        let res = await this.$store.dispatch(`${this.service}/find`, { query: this.query }) // TODO: prevent duplicated topics / latest only
         this.total = res.total
+        console.log(res)
       } catch (error) {
         console.error(error)
         this.$store.commit('openSnackbar', { color: 'error', text: 'Ein Unerwarteter Fehler ist aufgetreten!' })

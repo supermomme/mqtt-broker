@@ -68,7 +68,7 @@ const router = new Router({
         layout: 'DefaultLayout'
       }
     },
-    {
+    { // TODO: add messages (standalone)
       name: 'RetainList',
       path: '/admin/retain',
       component: () => import('./views/Retain/List'),

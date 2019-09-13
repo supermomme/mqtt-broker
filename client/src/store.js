@@ -16,7 +16,7 @@ export default new Vuex.Store({
       instanceDefaults: UserDefaults
     }),
     service('client'),
-    service('retain')
+    service('message')
   ],
   state: {
     sidebarOpened: true,

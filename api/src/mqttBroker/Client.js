@@ -2,6 +2,7 @@ const mqttCon = require('mqtt-connection')
 const MQTTPattern = require('mqtt-pattern')
 const uuidv4 = require('uuid/v4')
 const atob = require('atob')
+const mqtt_regex = require('mqtt-regex')
 
 module.exports = class Client {
   constructor (stream, Broker, app) {
@@ -13,6 +14,7 @@ module.exports = class Client {
     this.subscriptions = []
     // this.id = null
     this.dbId = null
+    this.userId = null
 
     this.client.on('pingreq', () => { this.client.pingresp() })
     this.client.on('connect', (packet) => this.handleConnect(packet))
@@ -92,6 +94,7 @@ module.exports = class Client {
         })
       }
       this.dbId = client._id
+      this.userId = client.userId
 
       this.client.connack({ returnCode: 0, messageId: packet.messageId })
     } catch (error) {
@@ -105,33 +108,7 @@ module.exports = class Client {
 
   async handlePublish (packet) {
     if (packet.topic.includes('+') || packet.topic.includes('#')) return
-    try {
-      let { totalStats } = await this.app.service('client').get(this.dbId)
-      totalStats.messagesSend++
-      await this.app.service('client').patch(this.dbId, { totalStats })
-      if (packet.retain) {
-        let retains = await this.app.service('retain').find({
-          query: {
-            topic: { $in: [packet.topic] }
-          },
-          paginate: false
-        })
-        if (retains.length === 0) {
-          await this.app.service('retain').create({
-            topic: packet.topic,
-            payload: packet.payload
-          })
-        } else {
-          await this.app.service('retain').patch(retains[0]._id, {
-            payload: packet.payload.toString()
-          })
-        }
-
-      }
-      this.Broker.distributeMessage(packet)
-    } catch (error) {
-      console.error(error) // eslint-disable-line no-console
-    }
+    this.Broker.distributeMessage(packet, this)
   }
 
   async updateSubscription () {
@@ -152,7 +129,21 @@ module.exports = class Client {
         this.updateSubscription()
       }
 
-      let retainedMessages = await this.app.service('retain-match').find({ topics: [...this.subscriptions.map(v => v.topic)] })
+      // let retainedMessages = await this.app.service('retain-match').find({ topics: [...this.subscriptions.map(v => v.topic)] })
+      let topics = [...this.subscriptions.map(v => v.topic)]
+      let retainedMessages = []
+      for (let i = 0; i < topics.length; i++) {
+        retainedMessages.push(...(await this.app.service('message').find({
+          paginate: false,
+          query: {
+            topic: {
+              $regex: mqtt_regex(topics[i]).regex
+            },
+            retain: true
+          }
+        })))
+      }
+      console.log(retainedMessages)
       for (let i = 0; i < retainedMessages.length; i++) {
         const retained = retainedMessages[i]
         let { totalStats } = await this.app.service('client').get(this.dbId)
@@ -162,7 +153,7 @@ module.exports = class Client {
           retain: true,
           topic: retained.topic,
           qos: 0,
-          payload: retained.payload
+          payload: Buffer.from(JSON.stringify(retained.payload))
         })
       }
 
