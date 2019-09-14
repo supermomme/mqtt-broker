@@ -22,7 +22,7 @@
         <v-container>
           <basic-table
             :fields="fields"
-            service="message"
+            service="message-retain"
             :base-query="baseQuery"
           />
         </v-container>
@@ -45,9 +45,7 @@ export default {
       { text: 'Dashboard', to: { name: 'Dashboard' } },
       { text: 'Retained', to: { name: 'RetainList' } }
     ],
-    baseQuery: {
-      retain: true
-    }
+    baseQuery: {}
   }),
   computed: {
     fields () {

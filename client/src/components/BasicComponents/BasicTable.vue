@@ -94,7 +94,7 @@ export default {
     async fetchData () {
       try {
         this.loading = true
-        let res = await this.$store.dispatch(`${this.service}/find`, { query: this.query }) // TODO: prevent duplicated topics / latest only
+        let res = await this.$store.dispatch(`${this.service}/find`, { query: this.query })
         this.total = res.total
         console.log(res)
       } catch (error) {

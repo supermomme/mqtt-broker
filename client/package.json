@@ -11,6 +11,7 @@
     "@cubejs-client/core": "^0.10.16",
     "@cubejs-client/vue": "^0.10.32",
     "@feathersjs/authentication-client": "^1.0.11",
+    "feathers-hooks-common": "^4.20.7",
     "@feathersjs/feathers": "^3.3.1",
     "@feathersjs/socketio-client": "^1.2.1",
     "core-js": "^2.6.5",

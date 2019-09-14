@@ -139,13 +139,12 @@ module.exports = class Client {
       let topics = [...this.subscriptions.map(v => v.topic)]
       let retainedMessages = []
       for (let i = 0; i < topics.length; i++) {
-        retainedMessages.push(...(await this.app.service('message').find({
+        retainedMessages.push(...(await this.app.service('message-retain').find({
           paginate: false,
           query: {
             topic: {
               $regex: mqtt_regex(topics[i]).regex
-            },
-            retain: true
+            }
           }
         })))
       }
