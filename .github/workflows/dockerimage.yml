@@ -67,7 +67,7 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: set image --namespace mqtt-prod --record deployment/api container=supermomme/mqtt_api:${{ github.sha }}
+        args: set image --namespace mqtt-prod --record deployment/api api=supermomme/mqtt_api:${{ github.sha }}
     
     # - name: verify deployment
     #   uses: steebchen/kubectl@master
