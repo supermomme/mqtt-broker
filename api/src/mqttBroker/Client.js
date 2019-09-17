@@ -148,9 +148,8 @@ module.exports = class Client {
           }
         })))
       }
-      console.log(retainedMessages)
       for (let i = 0; i < retainedMessages.length; i++) {
-        const retained = retainedMessages[i]
+        const retained = retainedMessages[i].message
         let { totalStats } = await this.app.service('client').get(this.dbId)
         totalStats.messagesRecieved++
         await this.app.service('client').patch(this.dbId, { totalStats })

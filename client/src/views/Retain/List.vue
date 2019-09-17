@@ -9,7 +9,7 @@
             <v-list-item>
               <v-list-item-content>
                 <v-list-item-title class="headline mb-0">
-                  Clients
+                  Retained Messages
                 </v-list-item-title>
                 <v-list-item-subtitle>
                   <basic-breadcrumbs :items="breadcrumb" />
@@ -51,7 +51,7 @@ export default {
     fields () {
       return [
         { text: 'Topic', value: 'topic' },
-        { text: 'Payload', value: 'payload', formatter: value => JSON.stringify(value) },
+        { text: 'Payload', value: 'message', formatter: value => JSON.stringify(value.payload) },
         { text: 'Updated', value: 'updatedAt', formatter: value => this.$moment(value).format('DD.MM.YYYY HH:mm') }
       ]
     }
