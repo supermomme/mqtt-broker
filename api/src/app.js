@@ -17,6 +17,7 @@ const appHooks = require('./app.hooks')
 const channels = require('./channels')
 
 const mqttBroker = require('./mqttBroker')
+const cubejs = require('./cubejs')
 const authentication = require('./authentication')
 const mongoose = require('./mongoose')
 
@@ -58,6 +59,8 @@ app.configure(channels)
 app.use(express.notFound())
 app.use(express.errorHandler({ logger: app.get('logger') }))
 
-app.hooks(appHooks)
+app.hooks(appHooks);
+
+app.configure(cubejs);
 
 module.exports = app

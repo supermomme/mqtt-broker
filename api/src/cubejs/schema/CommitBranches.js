@@ -1,5 +1,5 @@
-cube(`ClientsSubscriptions`, {
-  sql: `SELECT * FROM \`mqtt-broker\`.clients_subscriptions`,
+cube(`CommitBranches`, {
+  sql: `SELECT * FROM \`anker-dev\`.commit_branches`,
   
   joins: {
     
@@ -8,7 +8,7 @@ cube(`ClientsSubscriptions`, {
   measures: {
     count: {
       type: `count`,
-      drillMembers: []
+      drillMembers: [Id]
     }
   },
   
@@ -18,7 +18,11 @@ cube(`ClientsSubscriptions`, {
       type: `string`,
       title: ` Id`,
       primaryKey: true
-    }
+    },
     
+    branches: {
+      sql: `branches`,
+      type: `string`
+    }
   }
 });

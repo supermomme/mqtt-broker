@@ -1,5 +1,5 @@
-cube(`Clients`, {
-  sql: `SELECT * FROM \`mqtt-broker\`.clients`,
+cube(`messageRetains`, {
+  sql: `SELECT * FROM \`mqtt-broker\`.\`message-retains\``,
   
   joins: {
     
@@ -8,7 +8,7 @@ cube(`Clients`, {
   measures: {
     count: {
       type: `count`,
-      drillMembers: [clientid, userid, createdat, updatedat]
+      drillMembers: [messageid, createdat, updatedat]
     }
   },
   
@@ -19,19 +19,14 @@ cube(`Clients`, {
       title: ` Id`,
       primaryKey: true
     },
-    
-    clientid: {
-      sql: `${CUBE}.\`clientId\``,
+
+    messageid: {
+      sql: `${CUBE}.\`messageId\``,
       type: `string`
     },
     
-    status: {
-      sql: `status`,
-      type: `string`
-    },
-    
-    userid: {
-      sql: `${CUBE}.\`userId\``,
+    topic: {
+      sql: `topic`,
       type: `string`
     },
     
