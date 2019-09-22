@@ -18,12 +18,9 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" --password-stdin
     - name: Build the Docker image
-      run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA} --tag supermomme/mqtt_api:master
+      run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA:0:8} --tag supermomme/mqtt_api:master
     - name: Push Docker Image
-      run: docker push supermomme/mqtt_api:${GITHUB_SHA}
-    - name: Push Docker master Image if master
-      if: github.ref == 'refs/heads/master'
-      run: docker push supermomme/mqtt_api:master
+      run: docker push supermomme/mqtt_api:${GITHUB_SHA:0:8}
   build-client:
     name: Build Client
     runs-on: ubuntu-latest
@@ -35,57 +32,23 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" --password-stdin
     - name: Build the Docker image
-      run: docker build ./client --file ./client/Dockerfile --tag supermomme/mqtt_client:${GITHUB_SHA} --tag supermomme/mqtt_client:master
+      run: docker build ./client --file ./client/Dockerfile --tag supermomme/mqtt_client:${GITHUB_SHA:0:8} --tag supermomme/mqtt_client:master
     - name: Push Docker Image
-      run: docker push supermomme/mqtt_client:${GITHUB_SHA}
-    - name: Push Docker master Image if master
-      if: github.ref == 'refs/heads/master'
-      run: docker push supermomme/mqtt_client:master
-  build-cubejs:
-    name: Build CubeJS
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Docker Login
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" --password-stdin
-    - name: Build the Docker image
-      run: docker build ./cubejs --file ./cubejs/Dockerfile --tag supermomme/mqtt_cubejs:${GITHUB_SHA} --tag supermomme/mqtt_cubejs:master
-    - name: Push Docker Image
-      run: docker push supermomme/mqtt_cubejs:${GITHUB_SHA}
-    - name: Push Docker master Image if master
-      if: github.ref == 'refs/heads/master'
-      run: docker push supermomme/mqtt_cubejs:master
+      run: docker push supermomme/mqtt_client:${GITHUB_SHA:0:8}
   deploy:
     name: deploy to cluster
     runs-on: ubuntu-latest
-    needs: [build-api, build-client, build-cubejs]
+    needs: [build-api, build-client]
     steps:
-    - uses: actions/checkout@master
     - name: deploy api
       uses: steebchen/kubectl@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: set image --namespace mqtt-prod --record deployment/api api=supermomme/mqtt_api:${{ github.sha }}
+        args: set image --namespace mqtt-prod --record deployment/api api=supermomme/mqtt_api:${GITHUB_SHA:0:8}
     - name: deploy client
       uses: steebchen/kubectl@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       with:
-        args: set image --namespace mqtt-prod --record deployment/client client=supermomme/mqtt_client:${{ github.sha }}
-    - name: deploy cubejs
-      uses: steebchen/kubectl@master
-      env:
-        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-      with:
-        args: set image --namespace mqtt-prod --record deployment/cube cube=supermomme/mqtt_cubejs:${{ github.sha }}
-
-    # - name: verify deployment
-    #   uses: steebchen/kubectl@master
-    #   env:
-    #     KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-    #   with:
-    #     args: '"rollout status deployment/my-app"'
+        args: set image --namespace mqtt-prod --record deployment/client client=supermomme/mqtt_client:${GITHUB_SHA:0:8}
