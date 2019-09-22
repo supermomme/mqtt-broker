@@ -33,7 +33,7 @@
     "@codeanker/feathers-kubernetes": "^1.0.0",
     "@cubejs-backend/mongobi-driver": "^0.10.35",
     "@cubejs-backend/server": "^0.10.35",
-    "@cubejs-backend/server-core": "^0.10.35",
+    "cubejs-server-core": "0.10.41",
     "@feathersjs/authentication": "^2.1.16",
     "@feathersjs/authentication-jwt": "^2.0.10",
     "@feathersjs/authentication-local": "^1.2.9",

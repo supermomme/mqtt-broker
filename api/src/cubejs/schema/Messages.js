@@ -1,17 +1,25 @@
-cube(`Clients`, {
-  sql: `SELECT * FROM \`mqtt-broker\`.clients`,
+cube(`Messages`, {
+  sql: `SELECT * FROM \`mqtt-broker\`.messages`,
   
   joins: {
-    
+    Clients: {
+      sql: `${CUBE}.\`clientId\` = ${Clients}.\`clientId\``,
+      relationship: `belongsTo`
+    }
   },
   
   measures: {
     count: {
       type: `count`,
       drillMembers: [clientid, userid, createdat, updatedat]
+    },
+    dd: {
+      type: `number`,
+      sql: `CAST(${CUBE}.\`payload.val\` as decimal(10,5))`,
     }
   },
-  
+
+
   dimensions: {
     Id: {
       sql: `_id`,
@@ -19,14 +27,20 @@ cube(`Clients`, {
       title: ` Id`,
       primaryKey: true
     },
+
+    payloadVal: {
+      sql: `${CUBE}.\`payload.val\``,
+      type: `number`,
+      title: `Payload.val`
+    },
     
     clientid: {
       sql: `${CUBE}.\`clientId\``,
       type: `string`
     },
     
-    status: {
-      sql: `status`,
+    topic: {
+      sql: `topic`,
       type: `string`
     },
     
