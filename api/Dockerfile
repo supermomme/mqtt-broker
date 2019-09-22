@@ -5,7 +5,7 @@ RUN apk --no-cache add --virtual builds-deps build-base python
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 EXPOSE 3030
 EXPOSE 1883

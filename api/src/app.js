@@ -56,11 +56,12 @@ app.configure(services)
 app.configure(channels)
 
 // Configure a middleware for 404s and the error handler
+app.configure(cubejs);
+
 app.use(express.notFound())
 app.use(express.errorHandler({ logger: app.get('logger') }))
 
 app.hooks(appHooks);
 
-app.configure(cubejs);
 
 module.exports = app

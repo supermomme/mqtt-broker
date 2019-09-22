@@ -1,17 +1,14 @@
-cube(`Issue`, {
-  sql: `SELECT * FROM \`anker-dev\`.issue`,
+cube(`Users`, {
+  sql: `SELECT * FROM \`mqtt-broker\`.users`,
   
   joins: {
-    Project: {
-      sql: `${CUBE}.\`projectId\` = ${Project}._id`,
-      relationship: `belongsTo`
-    }
+    
   },
   
   measures: {
     count: {
       type: `count`,
-      drillMembers: [Id, jiraid, projectid, createdat, updatedat]
+      drillMembers: [firstname, lastname, username, createdat, updatedat]
     }
   },
   
@@ -23,23 +20,33 @@ cube(`Issue`, {
       primaryKey: true
     },
     
-    description: {
-      sql: `description`,
+    email: {
+      sql: `email`,
       type: `string`
     },
     
-    jiraid: {
-      sql: `${CUBE}.\`jiraId\``,
+    firstname: {
+      sql: `firstname`,
       type: `string`
     },
     
-    projectid: {
-      sql: `${CUBE}.\`projectId\``,
+    lastname: {
+      sql: `lastname`,
       type: `string`
     },
     
-    summary: {
-      sql: `summary`,
+    password: {
+      sql: `password`,
+      type: `string`
+    },
+    
+    role: {
+      sql: `role`,
+      type: `string`
+    },
+    
+    username: {
+      sql: `username`,
       type: `string`
     },
     

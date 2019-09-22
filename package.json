@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "docker-compose up --build",
+    "start": "docker-compose build && docker-compose up",
     "postinstall": "concurrently \"cd api && npm install\" \"cd client && npm install\" \"cd cubejs && npm install\"",
     "fix": "concurrently \"cd api && npm run eslint:fix\" \"cd client && npm run lint\""
   },
