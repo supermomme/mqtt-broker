@@ -16,7 +16,7 @@ jobs:
       env:
         COMMIT: ${{ github.sha }}
       with:
-        args: $COMMIT
+        args: ${COMMIT:0:8}
 
 #  build-api:
 #    name: Build Api
