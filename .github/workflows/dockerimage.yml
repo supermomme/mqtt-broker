@@ -10,8 +10,9 @@ jobs:
     name: TEST
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/echo@master
+    - uses: actions/checkout@master
     - name: Test
+      uses: actions/checkout@master
       env:
         COMMIT: ${{ github.sha }}
       with:
