@@ -10,13 +10,12 @@ jobs:
     name: TEST
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/echo@master
     - name: Test
       env:
         COMMIT: ${{ github.sha }}
       with:
         args: $COMMIT
-      run: echo
 
 #  build-api:
 #    name: Build Api
