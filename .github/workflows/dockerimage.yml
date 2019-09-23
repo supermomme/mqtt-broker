@@ -18,9 +18,13 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" --password-stdin
     - name: Build the Docker image
-      run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${GITHUB_SHA:0:8} --tag supermomme/mqtt_api:master
+      env:
+        COMMIT: ${{ github.sha }}
+      run: docker build ./api --file ./api/Dockerfile --tag supermomme/mqtt_api:${COMMIT:0:8} --tag supermomme/mqtt_api:master
     - name: Push Docker Image
-      run: docker push supermomme/mqtt_api:${GITHUB_SHA:0:8}
+      env:
+        COMMIT: ${{ github.sha }}
+      run: docker push supermomme/mqtt_api:${COMMIT:0:8}
   build-client:
     name: Build Client
     runs-on: ubuntu-latest
@@ -32,9 +36,13 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" --password-stdin
     - name: Build the Docker image
-      run: docker build ./client --file ./client/Dockerfile --tag supermomme/mqtt_client:${GITHUB_SHA:0:8} --tag supermomme/mqtt_client:master
+      env:
+        COMMIT: ${{ github.sha }}
+      run: docker build ./client --file ./client/Dockerfile --tag supermomme/mqtt_client:${COMMIT:0:8} --tag supermomme/mqtt_client:master
     - name: Push Docker Image
-      run: docker push supermomme/mqtt_client:${GITHUB_SHA:0:8}
+      env:
+        COMMIT: ${{ github.sha }}
+      run: docker push supermomme/mqtt_client:${COMMIT:0:8}
   deploy:
     name: deploy to cluster
     runs-on: ubuntu-latest
@@ -44,11 +52,13 @@ jobs:
       uses: steebchen/kubectl@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        COMMIT: ${{ github.sha }}
       with:
-        args: set image --namespace mqtt-prod --record deployment/api api=supermomme/mqtt_api:${GITHUB_SHA:0:8}
+        args: set image --namespace mqtt-prod --record deployment/api api=supermomme/mqtt_api:${COMMIT:0:8}
     - name: deploy client
       uses: steebchen/kubectl@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        COMMIT: ${{ github.sha }}
       with:
-        args: set image --namespace mqtt-prod --record deployment/client client=supermomme/mqtt_client:${GITHUB_SHA:0:8}
+        args: set image --namespace mqtt-prod --record deployment/client client=supermomme/mqtt_client:${COMMIT:0:8}

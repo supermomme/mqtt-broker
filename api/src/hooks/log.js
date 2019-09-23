@@ -11,7 +11,7 @@ module.exports = function () {
     // This debugs the service call and a stringified version of the hook context
     // You can customize the message (and logger) to your needs
     let logger = context.app.get('logger')
-    logger.info(`${context.type} ${context.path} ${context.method}`)
+    // logger.info(`${context.type} ${context.path} ${context.method}`)
 
     if(typeof context.toJSON === 'function' && logger.level === 'debug') {
       logger.debug('Hook Context', util.inspect(context, {colors: false}))
