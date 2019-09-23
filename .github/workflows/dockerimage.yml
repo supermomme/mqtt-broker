@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@master
     - name: Test
       env:
-        COMMIT: ${ github.sha:0:8 }
+        COMMIT: ${{ github.sha:0:8 }}
       run: echo $COMMIT
 
 #  build-api:
