@@ -37,5 +37,11 @@
       "passwordField": "password"
     }
   },
-  "mongodb": "mongodb://localhost:27017/mqtt-broker"
+  "mongo": {
+    "host": "localhost",
+    "port": "27017",
+    "db": "mqtt-broker",
+    "username": "",
+    "password": ""
+  }
 }

@@ -1,3 +1,5 @@
 {
-  "mongodb": "mongodb://mongo:27017/mqtt-broker"
+  "mongo": {
+    "host": "mongo"
+  }
 }
