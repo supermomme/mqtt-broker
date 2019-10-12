@@ -31,7 +31,7 @@ module.exports = async function(app) {
     
 
 
-    console.log(app._router.stack)
+    // console.log(app._router.stack)
 
   } catch(error) {
     console.error(error);
