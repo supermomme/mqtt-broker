@@ -7,7 +7,11 @@ module.exports = function (app) {
   console.log(mongoUrl)
   mongoose.connect(
     mongoUrl,
-    { useCreateIndex: true, useNewUrlParser: true }
+    { useCreateIndex: true, useNewUrlParser: true },
+    function(err) {
+      console.log(err)
+      if (!err) console.log('succ')
+    }
   )
   mongoose.Promise = global.Promise
 
