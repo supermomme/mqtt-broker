@@ -53,11 +53,11 @@ jobs:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         COMMIT: ${{ github.sha }}
       with:
-        args: set image --namespace mqtt-prod --record deployment/api api=supermomme/mqtt_api:${COMMIT}
+        args: set image --namespace mqtt --record deployment/api api=supermomme/mqtt_api:${COMMIT}
     - name: deploy client
       uses: steebchen/kubectl@master
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         COMMIT: ${{ github.sha }}
       with:
-        args: set image --namespace mqtt-prod --record deployment/client client=supermomme/mqtt_client:${COMMIT}
+        args: set image --namespace mqtt --record deployment/client client=supermomme/mqtt_client:${COMMIT}

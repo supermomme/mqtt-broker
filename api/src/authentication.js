@@ -22,6 +22,11 @@ module.exports = function (app) {
       remove: [
         authentication.hooks.authenticate('jwt')
       ]
+    },
+    error: {
+      create: [
+        (hook) => { console.log(hook.data); return hook }
+      ]
     }
   })
 }
