@@ -19,7 +19,6 @@ module.exports = () => {
           topic: hook.result.topic
         })
       }
-      console.log(existRet)
     } catch (error) {
       console.error(error)
     } 

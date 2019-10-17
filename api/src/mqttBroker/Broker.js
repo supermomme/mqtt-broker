@@ -42,7 +42,10 @@ module.exports = class Broker {
       })
       for (let i = 0; i < dbClients.length; i++) {
         const dbClient = dbClients[i]
-        if (this.clients.findIndex(client => client.dbId.toString() === dbClient._id.toString()) === -1) {
+        if (this.clients.findIndex(client => {
+          if (!client.dbId || !dbClient._id) return false
+          return client.dbId.toString() === dbClient._id.toString()
+        }) === -1) {
           await this.app.service('client').patch(dbClient._id, { status: 'DISCONNECTED', subscriptions: [] })
         }
       }
@@ -73,9 +76,10 @@ module.exports = class Broker {
   }
 
   async distributeMessage (packet, fromClient) {
+    console.log(packet.payload)
     let parsedPayload;
-    if (isJSON(packet.payload)) {
-      parsedPayload = JSON.parse(packet.payload)
+    if (isJSON(packet.payload.toString())) {
+      parsedPayload = JSON.parse(packet.payload.toString())
     } else {
       parsedPayload = { val: packet.payload.toString() }
     }
